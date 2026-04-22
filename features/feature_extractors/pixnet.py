@@ -1,19 +1,21 @@
 import os
-from features.feature_extractors.base import FeatureExtractor 
-from ..image.data_frame import convert_to_json
-from ..image.traffic_encoder import generate_image
-from config import *
+from features.feature_extractors.base import FeatureExtractor
+from features.image.data_frame import convert_to_json
+from features.image.traffic_encoder import generate_image
 
 
 class PixNet(FeatureExtractor):
-    def __init__(self):
-        super().__init__()
-        self.extractor(self.file_path, self.json_file_path)
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.extract_features(self.file_path)
 
-    def extractor(self, file_path, json_file_path):
-        print("Converting to json")
-        convert_to_json(file_path,json_file_path)
-        print("Generating images")
-        generate_image(json_file_path)
-        print("Generated images")
+    def extract_features(self, file_path):
+        images_output_dir = os.path.join(self.features_path, "Images", self.file_name[:-4] + "_images")
+        csv_dir = os.path.join(self.dir_path, "..", "datasets", self.dataset_name, "csv_files")
+        os.makedirs(csv_dir, exist_ok=True)
+        csv_track = os.path.join(csv_dir, self.file_name[:-4] + "_track.csv")
 
+        print(f"  Input          : {os.path.basename(file_path)}")
+        print(f"  Images dir     : {images_output_dir}")
+        convert_to_json(file_path, self.json_file_path)
+        generate_image(self.json_file_path, images_output_dir, csv_track)
